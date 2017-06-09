@@ -1,7 +1,7 @@
 # FloorIsLava
 Basic ARKit example that detects planes and makes them lava.
 
-![screenshot](IMG_0700.PNG)
+<img src="IMG_0700.PNG" width="200">
 
 ## Requirements
 - Xcode 9 (you can view the code in Xcode 8 but will not be able to build the project)
