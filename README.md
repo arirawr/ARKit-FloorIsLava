@@ -13,14 +13,14 @@ Welcome to ARKit! This basic project setup shows how to start an AR session and 
 
 The `ARSession` gathers data from the world and processes it. Because we want to place objects on horizontal planes, we need to configure the session to detect them:
 
-```
+```swift
 let configuration = ARWorldTrackingSessionConfiguration()
 configuration.planeDetection = .horizontal
 ```
 
 We can then start the session with this configuration by running:
 
-```
+```swift
 sceneView.session.run(configuration)
 ```
 
@@ -30,7 +30,7 @@ Next, we override the `ARSCNViewDelegate` renderer methods. The SceneView will c
 
 In the didAdd method, we check that the discovered node is a plane, then use a helper function to create a simple SceneKit plane. Finally, we add the SceneKit plane as a child of the automatically-generated node for the anchor.
 
-```
+```swift
 func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
 
   guard let planeAnchor = anchor as? ARPlaneAnchor else { return }
@@ -46,7 +46,7 @@ func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: AR
 
 As the user moves the device camera around the world, the session gets more information about anchors. We implement the didUpdate method, which is called when the session updates an existing anchor, so we can update our SceneKit node to match the AR plane.
 
-```
+```swift
 func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
 
     guard let planeAnchor = anchor as? ARPlaneAnchor else { return }
@@ -67,7 +67,7 @@ func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor:
 
 Finally, we implement the didRemove delegate method to remove any SceneKit planes we've created if a plane is removed from the world.
 
-```
+```swift
 func renderer(_ renderer: SCNSceneRenderer, didRemove node: SCNNode, for anchor: ARAnchor) {
 
     guard anchor is ARPlaneAnchor else { return }
