@@ -1,6 +1,8 @@
 # FloorIsLava
 Basic ARKit example that detects planes and makes them lava.
 
+![screenshot](IMG_0700.PNG)
+
 ## Requirements
 - Xcode 9 (you can view the code in Xcode 8 but will not be able to build the project)
 - Device running iOS 11, with an A9 chip or higher (iPhone 6S or newer, iPad Pro)
