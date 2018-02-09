@@ -16,7 +16,7 @@ Welcome to ARKit! This basic project setup shows how to start an AR session and 
 The `ARSession` gathers data from the world and processes it. Because we want to place objects on horizontal planes, we need to configure the session to detect them:
 
 ```swift
-let configuration = ARWorldTrackingSessionConfiguration()
+let configuration = ARWorldTrackingConfiguration()
 configuration.planeDetection = .horizontal
 ```
 
