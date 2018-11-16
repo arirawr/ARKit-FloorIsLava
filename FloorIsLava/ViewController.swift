@@ -59,7 +59,24 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         // Create a SceneKit plane to visualize the node using its position and extent.
 
         // Create the geometry and its materials
-        let plane = SCNPlane(width: CGFloat(anchor.extent.x), height: CGFloat(anchor.extent.z))
+        let plane: SCNGeometry
+        // Create a node with the plane geometry we created
+        let planeNode = SCNNode()
+
+        // SCNPlanes are vertically oriented in their local coordinate space.
+        // Rotate it to match the horizontal orientation of the ARPlaneAnchor.
+
+        if #available(iOS 11.3, *) {
+            plane = ARSCNPlaneGeometry(device: MTLCreateSystemDefaultDevice()!) ?? ARSCNPlaneGeometry()
+            (plane as! ARSCNPlaneGeometry).update(from: anchor.geometry)
+        } else {
+            // Fallback on earlier versions
+            plane = SCNPlane(width: CGFloat(anchor.extent.x), height: CGFloat(anchor.extent.z))
+            planeNode.position = SCNVector3Make(anchor.center.x, 0, anchor.center.z)
+            planeNode.transform = SCNMatrix4MakeRotation(-Float.pi / 2, 1, 0, 0)
+        }
+
+        planeNode.geometry = plane
 
         let lavaImage = UIImage(named: "Lava")
         let lavaMaterial = SCNMaterial()
@@ -68,15 +85,26 @@ class ViewController: UIViewController, ARSCNViewDelegate {
 
         plane.materials = [lavaMaterial]
 
-        // Create a node with the plane geometry we created
-        let planeNode = SCNNode(geometry: plane)
-        planeNode.position = SCNVector3Make(anchor.center.x, 0, anchor.center.z)
-
-        // SCNPlanes are vertically oriented in their local coordinate space.
-        // Rotate it to match the horizontal orientation of the ARPlaneAnchor.
-        planeNode.transform = SCNMatrix4MakeRotation(-Float.pi / 2, 1, 0, 0)
 
         return planeNode
+    }
+
+    /// Update the geometry of the node when anchor updates
+    ///
+    /// - Parameters:
+    ///   - node: root node for the anchor
+    ///   - anchor: ARPlaneAnchor of the detected surface
+    func updateGeometry(of node: SCNNode, with anchor: ARPlaneAnchor) {
+        guard let firstChild = node.childNodes.first else {
+            return
+        }
+        if #available(iOS 11.3, *), let plane = firstChild.geometry as? ARSCNPlaneGeometry {
+            plane.update(from: anchor.geometry)
+        } else if let plane = node.geometry as? SCNPlane {
+            plane.width = CGFloat(anchor.extent.x)
+            plane.height = CGFloat(anchor.extent.z)
+            node.position = SCNVector3Make(anchor.center.x, 0, anchor.center.z)
+        }
     }
 
     // Try with a floor node instead - this didn't work so well but leaving in for reference
@@ -99,14 +127,6 @@ class ViewController: UIViewController, ARSCNViewDelegate {
 
     // MARK: - ARSCNViewDelegate
 
-    /*
-     // Override to create and configure nodes for anchors added to the view's session.
-     func renderer(_ renderer: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
-     let node = SCNNode()
-
-     return node
-     }
-     */
 
     // The following functions are automatically called when the ARSessionView adds, updates, and removes anchors
 
@@ -124,43 +144,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     // When a detected plane is updated, make a new planeNode
     func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
         guard let planeAnchor = anchor as? ARPlaneAnchor else { return }
-
-        // Remove existing plane nodes
-        node.enumerateChildNodes {
-            (childNode, _) in
-            childNode.removeFromParentNode()
-        }
-
-
-        let planeNode = createPlaneNode(anchor: planeAnchor)
-
-        node.addChildNode(planeNode)
+        self.updateGeometry(of: node, with: planeAnchor)
     }
 
-    // When a detected plane is removed, remove the planeNode
-    func renderer(_ renderer: SCNSceneRenderer, didRemove node: SCNNode, for anchor: ARAnchor) {
-        guard anchor is ARPlaneAnchor else { return }
-
-        // Remove existing plane nodes
-        node.enumerateChildNodes {
-            (childNode, _) in
-            childNode.removeFromParentNode()
-        }
-    }
-
-
-    func session(_ session: ARSession, didFailWithError error: Error) {
-        // Present an error message to the user
-        
-    }
-    
-    func sessionWasInterrupted(_ session: ARSession) {
-        // Inform the user that the session has been interrupted, for example, by presenting an overlay
-        
-    }
-    
-    func sessionInterruptionEnded(_ session: ARSession) {
-        // Reset tracking and/or remove existing anchors if consistent tracking is required
-        
-    }
 }
